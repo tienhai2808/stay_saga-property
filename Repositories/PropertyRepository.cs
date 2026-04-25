@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using PropertyService.Data;
-using PropertyService.Exceptions;
+using Common.Exceptions;
 using PropertyService.Models;
 
 namespace PropertyService.Repositories;

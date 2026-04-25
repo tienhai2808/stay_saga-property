@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using PropertyService.DTOs;
 using PropertyDomainService = PropertyService.Services.PropertyService;
+using Common.Response;
 
 namespace PropertyService.Controllers;
 
@@ -15,10 +16,9 @@ public class PropertyController(PropertyDomainService propertyService) : Control
     {
         long id = await _propertyService.CreateAsync(dto);
 
-        var response = new ApiResponse<object>(
-          StatusCodes.Status201Created,
-          "Property created successful",
-          new { id = id.ToString() }
+        var response = HttpApiResponse<object>.Success(
+            new { id = id.ToString() },
+            "Property created successful"
         );
 
         return StatusCode(StatusCodes.Status201Created, response);

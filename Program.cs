@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using PropertyService.Data;
-using PropertyService.Extensions;
-using PropertyService.Middleware;
+using Common.Extensions;
+using Common.Middleware;
 using PropertyService.Repositories;
 using PropertyDomainService = PropertyService.Services.PropertyService;
 
@@ -24,7 +24,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-app.UseMiddleware<ExceptionHandlerMiddleware>();
+app.UseMiddleware<HttpExceptionMiddleware>();
 app.UseAuthorization();
 
 app.MapControllers();
