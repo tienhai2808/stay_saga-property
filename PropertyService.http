@@ -1,0 +1,18 @@
+@PropertyService_HostAddress = http://localhost:5203
+
+POST {{PropertyService_HostAddress}}/properties
+Content-Type: application/json
+Accept: application/json
+
+{
+  "name": "Stay Saga Riverside Hotel",
+  "address": "12 Nguyen Hue",
+  "ward": "Ben Nghe",
+  "city": "Ho Chi Minh City",
+  "latitude": 10.776889,
+  "longitude": 106.700806,
+  "checkInTime": "14:00:00",
+  "checkOutTime": "12:00:00"
+}
+
+###
