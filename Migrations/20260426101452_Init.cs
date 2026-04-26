@@ -64,6 +64,8 @@ namespace PropertyService.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_room_inventories", x => new { x.room_type_id, x.date });
+                    table.CheckConstraint("ck_room_inventories_booked_zero", "status <> 'booked' OR available_count = 0");
+                    table.CheckConstraint("ck_room_inventories_status", "status IN ('available', 'booked', 'blocked', 'maintenance')");
                     table.ForeignKey(
                         name: "FK_room_inventories_room_types_room_type_id",
                         column: x => x.room_type_id,
@@ -79,9 +81,10 @@ namespace PropertyService.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "ix_room_types_property_id",
+                name: "ux_room_types_property_id_name",
                 table: "room_types",
-                column: "property_id");
+                columns: new[] { "property_id", "name" },
+                unique: true);
         }
 
         /// <inheritdoc />

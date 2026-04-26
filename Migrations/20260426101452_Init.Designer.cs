@@ -12,7 +12,7 @@ using PropertyService.Data;
 namespace PropertyService.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260425095919_Init")]
+    [Migration("20260426101452_Init")]
     partial class Init
     {
         /// <inheritdoc />
@@ -102,7 +102,12 @@ namespace PropertyService.Migrations
 
                     b.HasKey("RoomTypeId", "Date");
 
-                    b.ToTable("room_inventories", (string)null);
+                    b.ToTable("room_inventories", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_room_inventories_booked_zero", "status <> 'booked' OR available_count = 0");
+
+                            t.HasCheckConstraint("ck_room_inventories_status", "status IN ('available', 'booked', 'blocked', 'maintenance')");
+                        });
                 });
 
             modelBuilder.Entity("PropertyService.Models.RoomType", b =>
@@ -135,8 +140,9 @@ namespace PropertyService.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("PropertyId")
-                        .HasDatabaseName("ix_room_types_property_id");
+                    b.HasIndex("PropertyId", "Name")
+                        .IsUnique()
+                        .HasDatabaseName("ux_room_types_property_id_name");
 
                     b.ToTable("room_types", (string)null);
                 });

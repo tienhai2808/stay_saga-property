@@ -1,3 +1,4 @@
+using Common.Exceptions;
 using IdGen;
 using PropertyService.DTOs;
 using PropertyService.Models;
@@ -28,5 +29,27 @@ public class PropertyService(PropertyRepository propertyRepo, IIdGenerator<long>
         await _propertyRepo.CreateAsync(property);
 
         return property.Id;
+    }
+
+    public async Task UpdateAsync(long id, UpdatePropertyDto dto)
+    {
+        var property = await _propertyRepo.GetByIdAsync(id) ?? 
+            throw new NotFoundException("Property not found");
+        
+        property.Name = dto.Name.Trim();
+        property.Address = dto.Address.Trim();
+        property.Ward = dto.Ward.Trim();
+        property.City = dto.City.Trim();
+        property.Latitude = dto.Latitude;
+        property.Longitude = dto.Longitude;
+        property.CheckInTime = dto.CheckInTime;
+        property.CheckOutTime = dto.CheckOutTime;
+
+        await _propertyRepo.UpdateAsync(property);
+    }
+
+    public async Task DeleteAsync(long id)
+    {
+        await _propertyRepo.DeleteAsync(id);
     }
 }

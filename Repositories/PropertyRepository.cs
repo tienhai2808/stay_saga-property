@@ -18,11 +18,38 @@ public class PropertyRepository(AppDbContext db)
             await _db.SaveChangesAsync();
         }
         catch (DbUpdateException ex) when (
-          ex.InnerException is PostgresException pg &&
-          pg.SqlState == PostgresErrorCodes.UniqueViolation
+            ex.InnerException is PostgresException pg &&
+            pg.SqlState == PostgresErrorCodes.UniqueViolation
         )
         {
             throw new ConflictException("Property already exists");
         }
+    }
+
+    public async Task<Property?> GetByIdAsync(long id)
+    {
+        return await _db.Properties
+            .FirstOrDefaultAsync(p => p.Id == id);
+    }
+
+    public async Task UpdateAsync(Property property)
+    {
+        _db.Properties.Update(property);
+        try
+        {
+            await _db.SaveChangesAsync();
+        }
+        catch (DbUpdateException ex) when (
+            ex.InnerException is PostgresException pg &&
+            pg.SqlState == PostgresErrorCodes.UniqueViolation
+        )
+        {
+            throw new ConflictException("Property already exists");
+        }
+    }
+
+    public async Task DeleteAsync(long id)
+    {
+        await _db.Properties.Where(p => p.Id == id).ExecuteDeleteAsync();
     }
 }

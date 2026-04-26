@@ -16,3 +16,11 @@ Accept: application/json
 }
 
 ###
+POST {{PropertyService_HostAddress}}/room-types
+Content-Type: application/json
+Accept: application/json
+
+{
+  "name": "Standard Double",
+  "propertyId": ""
+}

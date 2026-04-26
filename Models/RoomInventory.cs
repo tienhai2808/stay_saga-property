@@ -5,6 +5,6 @@ public class RoomInventory
     public long RoomTypeId { get; set; }
     public DateOnly Date { get; set; }
     public int AvailableCount { get; set; }
-    public string Status { get; set; } = string.Empty;
+    public string Status { get; set; } = RoomInventoryStatuses.Available;
     public RoomType RoomType { get; set; } = null!;
 }
