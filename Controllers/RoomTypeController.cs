@@ -1,4 +1,4 @@
-using Common.Response;
+using Common.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PropertyService.DTOs;
@@ -18,7 +18,7 @@ public class RoomTypeController(RoomTypeService roomTypeService) : ControllerBas
     {
         long id = await _roomTypeService.CreateAsync(dto);
 
-        var response = HttpApiResponse<object>.Success(
+        var response = HttpApiResponseDto<object>.Success(
             new { id = id.ToString() },
             "Room type created successfully"
         );
