@@ -8,6 +8,7 @@ namespace PropertyService.Controllers;
 
 [ApiController]
 [Route("properties")]
+[Authorize]
 public class PropertyController(PropertyDomainService propertyService) : ControllerBase
 {
     private readonly PropertyDomainService _propertyService = propertyService;
@@ -59,12 +60,34 @@ public class PropertyController(PropertyDomainService propertyService) : Control
     {
         var (propertiesRes, meta) = await _propertyService.ListAsync(dto);
 
-        var response =HttpApiResponseDto<object>.Success(
+        var response = HttpApiResponseDto<object>.Success(
             new
             {
                 properties = propertiesRes,
                 meta,
             }
+        );
+
+        return Ok(response);
+    }
+
+    [HttpGet("{id}/room-types")]
+    public async Task<IActionResult> ListRoomTypesByID(long id, [FromQuery] RoomTypeQueryDto dto)
+    {
+        var includeProperty = dto.Include == "property";
+
+        var (propertyRes, roomTypesRes, meta) = await _propertyService.ListRoomTypesByIdAsync(id, dto, includeProperty);
+
+        var resData = new Dictionary<string, object>
+        {
+            ["roomTypes"] = roomTypesRes
+        };
+
+        if (includeProperty && propertyRes != null)
+            resData["property"] = propertyRes;
+        
+        var response = HttpApiResponseDto<object>.Success(
+            resData
         );
 
         return Ok(response);

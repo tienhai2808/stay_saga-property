@@ -7,9 +7,10 @@ using PropertyService.Repositories;
 
 namespace PropertyService.Services;
 
-public class PropertyService(PropertyRepository propertyRepo, IIdGenerator<long> idGenerator)
+public class PropertyService(PropertyRepository propertyRepo, RoomTypeRepository roomTypeRepo, IIdGenerator<long> idGenerator)
 {
     private readonly PropertyRepository _propertyRepo = propertyRepo;
+    private readonly RoomTypeRepository _roomTypeRepo = roomTypeRepo;
     private readonly IIdGenerator<long> _idGenerator = idGenerator;
 
     public async Task<long> CreateAsync(CreatePropertyDto dto)
@@ -118,5 +119,88 @@ public class PropertyService(PropertyRepository propertyRepo, IIdGenerator<long>
         );
 
         return (propertyRes, meta);
+    }
+
+    public async Task<(PropertyResponseDto?, List<BasicRoomTypeResponseDto>, MetaResponseDto)> ListRoomTypesByIdAsync(long id, RoomTypeQueryDto dto, bool includeProperty)
+    {
+        PropertyResponseDto? propertyRes = null;
+
+        if (includeProperty)
+        {
+            var property = await _propertyRepo.GetByIdAsync(id) ??
+                throw new NotFoundException("Property not found");
+            
+            propertyRes = new PropertyResponseDto(
+                property.Id.ToString(),
+                property.Name,
+                property.Address,
+                property.Ward,
+                property.City,
+                property.Latitude,
+                property.Longitude,
+                property.CheckInTime,
+                property.CheckOutTime
+            );
+        }
+
+        var sort = string.IsNullOrWhiteSpace(dto.Sort)
+            ? "id"
+            : dto.Sort.Trim().ToLowerInvariant();
+
+        var order = dto.Order.Trim();
+        var isDescending = false;
+        if (!string.IsNullOrWhiteSpace(order))
+        {
+            isDescending = order.Equals("desc", StringComparison.OrdinalIgnoreCase);
+            var isAscending = order.Equals("asc", StringComparison.OrdinalIgnoreCase);
+            if (!isDescending && !isAscending)
+            {
+                throw new ValidationException("Order must be either 'asc' or 'desc'");
+            }
+        }
+
+        var validSortFields = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "id",
+            "name",
+            "price",
+        };
+
+        if (!validSortFields.Contains(sort))
+        {
+            throw new ValidationException("Sort must be one of: id, name, price");
+        }
+
+        var (roomTypes, total) = await _roomTypeRepo.ListByPropertyIdAsync(
+            id,
+            dto.Search,
+            sort,
+            isDescending,
+            dto.Page,
+            dto.Limit
+        );
+
+        var roomTypesRes = roomTypes
+            .Select(rt => new BasicRoomTypeResponseDto(
+                rt.Id.ToString(),
+                rt.Name,
+                rt.Price,
+                rt.MaxGuest,
+                rt.TotalRoom
+            ))
+            .ToList();
+        
+        var totalPage = total == 0 ? 0 : (int)Math.Ceiling(total / (double)dto.Limit);
+
+        var meta = new MetaResponseDto(
+            total,
+            dto.Page,
+            dto.Limit,
+            totalPage,
+            dto.Page > 1 && totalPage > 0,
+            dto.Page < totalPage
+        );
+
+        return (propertyRes, roomTypesRes, meta);
     }
 }

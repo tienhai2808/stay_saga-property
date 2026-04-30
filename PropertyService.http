@@ -24,3 +24,6 @@ Accept: application/json
   "name": "Standard Double",
   "propertyId": ""
 }
+
+###
+GET {{PropertyService_HostAddress}}/properties/879687916060672/room-types?include=property
