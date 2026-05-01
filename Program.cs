@@ -5,11 +5,13 @@ using Common.Middleware;
 using PropertyService.Repositories;
 using PropertyDomainService = PropertyService.Services.PropertyService;
 using PropertyService.Services;
+using PropertyService.GrpcServices;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddSnowflakeIdGenerator(builder.Configuration);
 builder.Services.AddApiControllers();
+builder.Services.AddGrpc();
 builder.Services.AddOpenApi();
 builder.Services.AddKeycloakJwtAuth(builder.Configuration);
 builder.Services.AddScoped<PropertyRepository>();
@@ -28,11 +30,11 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
-app.UseHttpsRedirection();
 app.UseMiddleware<HttpExceptionMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.MapGrpcService<PropertyGrpcService>();
 app.MapControllers();
 
 app.Run();

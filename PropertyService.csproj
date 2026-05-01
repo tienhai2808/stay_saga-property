@@ -17,6 +17,7 @@
     </PackageReference>
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.1" />
     <PackageReference Include="StaySaga.Common" Version="1.0.0" />
+    <PackageReference Include="StaySaga.Grpc" Version="1.0.0" />
   </ItemGroup>
 
 </Project>
