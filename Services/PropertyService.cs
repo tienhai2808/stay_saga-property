@@ -82,9 +82,7 @@ public class PropertyService(PropertyRepository propertyRepo, RoomTypeRepository
             "city"
         };
         if (!validSortFields.Contains(sort))
-        {
             throw new ValidationException("Sort must be one of: id, name, address, ward, city");
-        }
 
         var (properties, total) = await _propertyRepo.ListAsync(
             dto.Search,
@@ -167,9 +165,7 @@ public class PropertyService(PropertyRepository propertyRepo, RoomTypeRepository
         };
 
         if (!validSortFields.Contains(sort))
-        {
             throw new ValidationException("Sort must be one of: id, name, price");
-        }
 
         var (roomTypes, total) = await _roomTypeRepo.ListByPropertyIdAsync(
             id,

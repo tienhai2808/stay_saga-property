@@ -49,7 +49,11 @@ public class PropertyRepository(AppDbContext db)
 
     public async Task DeleteAsync(long id)
     {
-        await _db.Properties.Where(p => p.Id == id).ExecuteDeleteAsync();
+        var affectedRows = await _db.Properties
+            .Where(p => p.Id == id)
+            .ExecuteDeleteAsync();
+        if (affectedRows == 0)
+            throw new NotFoundException("Property not found");
     }
 
     public async Task<(List<Property> Properties, int Total)> ListAsync(

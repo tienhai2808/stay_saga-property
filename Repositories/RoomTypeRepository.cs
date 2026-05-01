@@ -59,11 +59,8 @@ public class RoomTypeRepository(AppDbContext db)
         var affectedRows = await _db.RoomTypes
             .Where(rt => rt.Id == id)
             .ExecuteDeleteAsync();
-
         if (affectedRows == 0)
-        {
             throw new NotFoundException("Room type not found");
-        }
     }
 
     public async Task<(List<RoomType>, int)> ListByPropertyIdAsync(
@@ -122,9 +119,7 @@ public class RoomTypeRepository(AppDbContext db)
             .Include(rt => rt.Property);
 
         if (propertyId.HasValue)
-        {
             query = query.Where(rt => rt.PropertyId == propertyId.Value);
-        }
 
         if (!string.IsNullOrWhiteSpace(search))
         {
