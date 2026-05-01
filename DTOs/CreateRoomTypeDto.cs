@@ -16,8 +16,8 @@ public class CreateRoomTypeDto
     [Range(0.01, double.MaxValue, ErrorMessage = "Price must be greater than 0.")]
     public decimal Price { get; set; }
 
-    [Range(1, int.MaxValue, ErrorMessage = "Max people must be greater than 0.")]
-    public int MaxPeople { get; set; }
+    [Range(1, int.MaxValue, ErrorMessage = "Max guest must be greater than 0.")]
+    public int MaxGuest { get; set; }
 
     [Range(1, int.MaxValue, ErrorMessage = "Total room must be greater than 0.")]
     public int TotalRoom { get; set; }

@@ -27,3 +27,9 @@ Accept: application/json
 
 ###
 GET {{PropertyService_HostAddress}}/properties/879687916060672/room-types?include=property
+
+###
+GET {{PropertyService_HostAddress}}/room-types?propertyId=879687916060672
+
+###
+DELETE {{PropertyService_HostAddress}}/room-types/3123123123

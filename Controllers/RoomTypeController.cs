@@ -8,12 +8,13 @@ namespace PropertyService.Controllers;
 
 [ApiController]
 [Route("room-types")]
-[Authorize(Roles = "admin")]
+[Authorize]
 public class RoomTypeController(RoomTypeService roomTypeService) : ControllerBase
 {
     private readonly RoomTypeService _roomTypeService = roomTypeService;
 
     [HttpPost]
+    [Authorize(Roles = "admin")]
     public async Task<IActionResult> Create(CreateRoomTypeDto dto)
     {
         long id = await _roomTypeService.CreateAsync(dto);
@@ -24,5 +25,49 @@ public class RoomTypeController(RoomTypeService roomTypeService) : ControllerBas
         );
 
         return StatusCode(StatusCodes.Status201Created, response);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> List([FromQuery] RoomTypeQueryDto dto)
+    {
+        var (roomTypesRes, meta) = await _roomTypeService.ListAsync(dto);
+
+        var response = HttpApiResponseDto<object>.Success(
+            new
+            {
+                roomTypes = roomTypesRes,
+                meta
+            }
+        );
+
+        return Ok(response);
+    }
+
+    [HttpPut("{id}")]
+    [Authorize(Roles = "admin")]
+    public async Task<IActionResult> Update(long id, UpdateRoomTypeDto dto)
+    {
+        await _roomTypeService.UpdateAsync(id, dto);
+
+        var response = HttpApiResponseDto<object>.Success(
+            null,
+            "Room type updated successfully"
+        );
+
+        return Ok(response);
+    }
+
+    [HttpDelete("{id}")]
+    [Authorize(Roles = "admin")]
+    public async Task<IActionResult> Delete(long id)
+    {
+        await _roomTypeService.DeleteAsync(id);
+
+        var response = HttpApiResponseDto<object>.Success(
+            null,
+            "Room type deleted successfully"
+        );
+
+        return Ok(response);
     }
 }

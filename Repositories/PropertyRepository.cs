@@ -28,8 +28,7 @@ public class PropertyRepository(AppDbContext db)
 
     public async Task<Property?> GetByIdAsync(long id)
     {
-        return await _db.Properties
-            .FirstOrDefaultAsync(p => p.Id == id);
+        return await _db.Properties.FirstOrDefaultAsync(p => p.Id == id);
     }
 
     public async Task UpdateAsync(Property property)
