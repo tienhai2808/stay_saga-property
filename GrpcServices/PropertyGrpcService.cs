@@ -1,6 +1,6 @@
 using Grpc.Core;
-using StaySaga.GRPC.Property;
-using PropertyGrpc = StaySaga.GRPC.Property.PropertyService;
+using Grpc.Property;
+using PropertyGrpc = Grpc.Property.PropertyService;
 
 namespace PropertyService.GrpcServices;
 
