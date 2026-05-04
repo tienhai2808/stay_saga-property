@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
 using PropertyService.Data;
 using Common.Extensions;
@@ -5,9 +6,21 @@ using Common.Middleware;
 using PropertyService.Repositories;
 using PropertyDomainService = PropertyService.Services.PropertyService;
 using PropertyService.Services;
-using PropertyService.GrpcServices;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.ListenLocalhost(7026, listenOptions =>
+    {
+        listenOptions.Protocols = HttpProtocols.Http2;
+    });
+
+    options.ListenLocalhost(5203, listenOptions =>
+    {
+        listenOptions.Protocols = HttpProtocols.Http1;
+    });
+});
 
 builder.Services.AddSnowflakeIdGenerator(builder.Configuration);
 builder.Services.AddApiControllers();
@@ -34,7 +47,7 @@ app.UseMiddleware<HttpExceptionMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapGrpcService<PropertyGrpcService>();
+app.MapGrpcService<GrpcService>();
 app.MapControllers();
 
 app.Run();
