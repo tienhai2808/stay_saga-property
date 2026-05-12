@@ -15,9 +15,9 @@ public class RoomTypeController(RoomTypeService roomTypeService) : ControllerBas
 
     [HttpPost]
     [Authorize(Roles = "admin")]
-    public async Task<IActionResult> Create(CreateRoomTypeDto dto)
+    public async Task<IActionResult> Create(CreateRoomTypeDto dto, CancellationToken cancellationToken)
     {
-        long id = await _roomTypeService.CreateAsync(dto);
+        long id = await _roomTypeService.CreateAsync(dto, cancellationToken);
 
         var response = HttpApiResponseDto<object>.Success(
             new { id = id.ToString() },
@@ -28,9 +28,9 @@ public class RoomTypeController(RoomTypeService roomTypeService) : ControllerBas
     }
 
     [HttpGet]
-    public async Task<IActionResult> List([FromQuery] RoomTypeQueryDto dto)
+    public async Task<IActionResult> List([FromQuery] RoomTypeQueryDto dto, CancellationToken cancellationToken)
     {
-        var (roomTypesRes, meta) = await _roomTypeService.ListAsync(dto);
+        var (roomTypesRes, meta) = await _roomTypeService.ListAsync(dto, cancellationToken);
 
         var response = HttpApiResponseDto<object>.Success(
             new
@@ -45,9 +45,9 @@ public class RoomTypeController(RoomTypeService roomTypeService) : ControllerBas
 
     [HttpPut("{id}")]
     [Authorize(Roles = "admin")]
-    public async Task<IActionResult> Update(long id, UpdateRoomTypeDto dto)
+    public async Task<IActionResult> Update(long id, UpdateRoomTypeDto dto, CancellationToken cancellationToken)
     {
-        await _roomTypeService.UpdateAsync(id, dto);
+        await _roomTypeService.UpdateAsync(id, dto, cancellationToken);
 
         var response = HttpApiResponseDto<object>.Success(
             null,
@@ -59,9 +59,9 @@ public class RoomTypeController(RoomTypeService roomTypeService) : ControllerBas
 
     [HttpDelete("{id}")]
     [Authorize(Roles = "admin")]
-    public async Task<IActionResult> Delete(long id)
+    public async Task<IActionResult> Delete(long id, CancellationToken cancellationToken)
     {
-        await _roomTypeService.DeleteAsync(id);
+        await _roomTypeService.DeleteAsync(id, cancellationToken);
 
         var response = HttpApiResponseDto<object>.Success(
             null,

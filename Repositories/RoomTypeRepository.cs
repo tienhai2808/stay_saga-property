@@ -10,12 +10,12 @@ public class RoomTypeRepository(AppDbContext db)
 {
     private readonly AppDbContext _db = db;
 
-    public async Task CreateAsync(RoomType roomType)
+    public async Task CreateAsync(RoomType roomType, CancellationToken cancellationToken = default)
     {
         _db.RoomTypes.Add(roomType);
         try
         {
-            await _db.SaveChangesAsync();
+            await _db.SaveChangesAsync(cancellationToken);
         }
         catch (DbUpdateException ex) when (
             ex.InnerException is PostgresException pg &&
@@ -33,17 +33,17 @@ public class RoomTypeRepository(AppDbContext db)
         }
     }
 
-    public async Task<RoomType?> GetById(long id)
+    public async Task<RoomType?> GetById(long id, CancellationToken cancellationToken = default)
     {
-        return await _db.RoomTypes.FirstOrDefaultAsync(rt => rt.Id == id);
+        return await _db.RoomTypes.FirstOrDefaultAsync(rt => rt.Id == id, cancellationToken);
     }
 
-    public async Task UpdateAsync(RoomType roomType)
+    public async Task UpdateAsync(RoomType roomType, CancellationToken cancellationToken = default)
     {
         _db.RoomTypes.Update(roomType);
         try
         {
-            await _db.SaveChangesAsync();
+            await _db.SaveChangesAsync(cancellationToken);
         }
         catch (DbUpdateException ex) when (
             ex.InnerException is PostgresException pg &&
@@ -54,11 +54,11 @@ public class RoomTypeRepository(AppDbContext db)
         }
     }
 
-    public async Task DeleteAsync(long id)
+    public async Task DeleteAsync(long id, CancellationToken cancellationToken = default)
     {
         var affectedRows = await _db.RoomTypes
             .Where(rt => rt.Id == id)
-            .ExecuteDeleteAsync();
+            .ExecuteDeleteAsync(cancellationToken);
         if (affectedRows == 0)
             throw new NotFoundException("Room type not found");
     }
@@ -69,7 +69,8 @@ public class RoomTypeRepository(AppDbContext db)
         string sort,
         bool isDescending,
         int page,
-        int limit
+        int limit,
+        CancellationToken cancellationToken = default
     )
     {
         var query = _db.RoomTypes.AsNoTracking().Where(rt => rt.PropertyId == propertyId);
@@ -96,11 +97,11 @@ public class RoomTypeRepository(AppDbContext db)
                 : query.OrderBy(rt => rt.Id),
         };
 
-        var total = await query.CountAsync();
+        var total = await query.CountAsync(cancellationToken);
         var roomTypes = await query
             .Skip((page - 1) * limit)
             .Take(limit)
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
 
         return (roomTypes, total);
     }
@@ -111,7 +112,8 @@ public class RoomTypeRepository(AppDbContext db)
         string sort,
         bool isDescending,
         int page,
-        int limit
+        int limit,
+        CancellationToken cancellationToken = default
     )
     {
         IQueryable<RoomType> query = _db.RoomTypes
@@ -141,11 +143,11 @@ public class RoomTypeRepository(AppDbContext db)
                 : query.OrderBy(rt => rt.Id),
         };
 
-        var total = await query.CountAsync();
+        var total = await query.CountAsync(cancellationToken);
         var roomTypes = await query
             .Skip((page - 1) * limit)
             .Take(limit)
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
 
         return (roomTypes, total);
     }

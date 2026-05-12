@@ -20,7 +20,7 @@ public class RoomTypeService(
     private readonly IIdGenerator<long> _idGenerator = idGenerator;
     private readonly AppDbContext _db = db;
 
-    public async Task<long> CreateAsync(CreateRoomTypeDto dto)
+    public async Task<long> CreateAsync(CreateRoomTypeDto dto, CancellationToken cancellationToken = default)
     {
         if (!long.TryParse(dto.PropertyId.Trim(), out long propertyId) || propertyId <= 0)
         {
@@ -40,29 +40,33 @@ public class RoomTypeService(
         var startDate = DateOnly.FromDateTime(DateTime.UtcNow.Date);
         var endExclusiveDate = startDate.AddMonths(18);
 
-        await using var transaction = await _db.Database.BeginTransactionAsync();
+        await using var transaction = await _db.Database.BeginTransactionAsync(cancellationToken);
         try
         {
-            await _roomTypeRepo.CreateAsync(roomType);
+            await _roomTypeRepo.CreateAsync(roomType, cancellationToken);
             await _roomInventoryRepo.CreateBulkAsync(
                 roomType.Id,
                 roomType.TotalRoom,
                 startDate,
-                endExclusiveDate
+                endExclusiveDate,
+                cancellationToken
             );
 
-            await transaction.CommitAsync();
+            await transaction.CommitAsync(cancellationToken);
         }
         catch
         {
-            await transaction.RollbackAsync();
+            await transaction.RollbackAsync(cancellationToken);
             throw;
         }
 
         return roomType.Id;
     }
 
-    public async Task<(List<RoomTypeResponseDto>, MetaResponseDto)> ListAsync(RoomTypeQueryDto dto)
+    public async Task<(List<RoomTypeResponseDto>, MetaResponseDto)> ListAsync(
+        RoomTypeQueryDto dto, 
+        CancellationToken cancellationToken = default
+    )
     {
         long? propertyId = null;
         if (!string.IsNullOrWhiteSpace(dto.PropertyId))
@@ -108,7 +112,8 @@ public class RoomTypeService(
             sort,
             isDescending,
             dto.Page,
-            dto.Limit
+            dto.Limit,
+            cancellationToken
         );
 
         var roomTypesRes = roomTypes
@@ -142,9 +147,13 @@ public class RoomTypeService(
         return (roomTypesRes, meta);
     }
 
-    public async Task UpdateAsync(long id, UpdateRoomTypeDto dto)
+    public async Task UpdateAsync(
+        long id, 
+        UpdateRoomTypeDto dto, 
+        CancellationToken cancellationToken = default
+    )
     {
-        var roomType = await _roomTypeRepo.GetById(id) ??
+        var roomType = await _roomTypeRepo.GetById(id, cancellationToken) ??
             throw new NotFoundException("Room type not found");
 
         if (!long.TryParse(dto.PropertyId.Trim(), out long propertyId) || propertyId <= 0)
@@ -161,8 +170,8 @@ public class RoomTypeService(
         await _roomTypeRepo.UpdateAsync(roomType);
     }
 
-    public async Task DeleteAsync(long id)
+    public async Task DeleteAsync(long id, CancellationToken cancellationToken = default)
     {
-        await _roomTypeRepo.DeleteAsync(id);
+        await _roomTypeRepo.DeleteAsync(id, cancellationToken);
     }
 }

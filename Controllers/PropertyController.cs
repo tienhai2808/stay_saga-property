@@ -15,9 +15,9 @@ public class PropertyController(PropertyDomainService propertyService) : Control
 
     [HttpPost]
     [Authorize(Roles = "admin")]
-    public async Task<IActionResult> Create(CreatePropertyDto dto)
+    public async Task<IActionResult> Create(CreatePropertyDto dto, CancellationToken cancellationToken)
     {
-        long id = await _propertyService.CreateAsync(dto);
+        long id = await _propertyService.CreateAsync(dto, cancellationToken);
 
         var response = HttpApiResponseDto<object>.Success(
             new { id = id.ToString() },
@@ -29,9 +29,9 @@ public class PropertyController(PropertyDomainService propertyService) : Control
 
     [HttpPut("{id}")]
     [Authorize(Roles = "admin")]
-    public async Task<IActionResult> Update(long id, UpdatePropertyDto dto)
+    public async Task<IActionResult> Update(long id, UpdatePropertyDto dto, CancellationToken cancellationToken)
     {
-        await _propertyService.UpdateAsync(id, dto);
+        await _propertyService.UpdateAsync(id, dto, cancellationToken);
 
         var response = HttpApiResponseDto<object>.Success(
             null,
@@ -43,9 +43,9 @@ public class PropertyController(PropertyDomainService propertyService) : Control
 
     [HttpDelete("{id}")]
     [Authorize(Roles = "admin")]
-    public async Task<IActionResult> Delete(long id)
+    public async Task<IActionResult> Delete(long id, CancellationToken cancellationToken)
     {
-        await _propertyService.DeleteAsync(id);
+        await _propertyService.DeleteAsync(id, cancellationToken);
 
         var response = HttpApiResponseDto<object>.Success(
             null,
@@ -56,9 +56,9 @@ public class PropertyController(PropertyDomainService propertyService) : Control
     }
 
     [HttpGet]
-    public async Task<IActionResult> List([FromQuery] PropertyQueryDto dto)
+    public async Task<IActionResult> List([FromQuery] PropertyQueryDto dto, CancellationToken cancellationToken)
     {
-        var (propertiesRes, meta) = await _propertyService.ListAsync(dto);
+        var (propertiesRes, meta) = await _propertyService.ListAsync(dto, cancellationToken);
 
         var response = HttpApiResponseDto<object>.Success(
             new
@@ -72,15 +72,16 @@ public class PropertyController(PropertyDomainService propertyService) : Control
     }
 
     [HttpGet("{id}/room-types")]
-    public async Task<IActionResult> ListRoomTypesByID(long id, [FromQuery] RoomTypeQueryDto dto)
+    public async Task<IActionResult> ListRoomTypesByID(long id, [FromQuery] RoomTypeQueryDto dto, CancellationToken cancellationToken)
     {
         var includeProperty = dto.Include == "property";
 
-        var (propertyRes, roomTypesRes, meta) = await _propertyService.ListRoomTypesByIdAsync(id, dto, includeProperty);
+        var (propertyRes, roomTypesRes, meta) = await _propertyService.ListRoomTypesByIdAsync(id, dto, includeProperty, cancellationToken);
 
         var resData = new Dictionary<string, object>
         {
-            ["roomTypes"] = roomTypesRes
+            ["roomTypes"] = roomTypesRes,
+            ["meta"] = meta
         };
 
         if (includeProperty && propertyRes != null)

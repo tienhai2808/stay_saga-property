@@ -10,12 +10,12 @@ public class PropertyRepository(AppDbContext db)
 {
     private readonly AppDbContext _db = db;
 
-    public async Task CreateAsync(Property property)
+    public async Task CreateAsync(Property property, CancellationToken cancellationToken = default)
     {
         _db.Properties.Add(property);
         try
         {
-            await _db.SaveChangesAsync();
+            await _db.SaveChangesAsync(cancellationToken);
         }
         catch (DbUpdateException ex) when (
             ex.InnerException is PostgresException pg &&
@@ -26,17 +26,17 @@ public class PropertyRepository(AppDbContext db)
         }
     }
 
-    public async Task<Property?> GetByIdAsync(long id)
+    public async Task<Property?> GetByIdAsync(long id, CancellationToken cancellationToken = default)
     {
-        return await _db.Properties.FirstOrDefaultAsync(p => p.Id == id);
+        return await _db.Properties.FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
     }
 
-    public async Task UpdateAsync(Property property)
+    public async Task UpdateAsync(Property property, CancellationToken cancellationToken = default)
     {
         _db.Properties.Update(property);
         try
         {
-            await _db.SaveChangesAsync();
+            await _db.SaveChangesAsync(cancellationToken);
         }
         catch (DbUpdateException ex) when (
             ex.InnerException is PostgresException pg &&
@@ -47,11 +47,11 @@ public class PropertyRepository(AppDbContext db)
         }
     }
 
-    public async Task DeleteAsync(long id)
+    public async Task DeleteAsync(long id, CancellationToken cancellationToken = default)
     {
         var affectedRows = await _db.Properties
             .Where(p => p.Id == id)
-            .ExecuteDeleteAsync();
+            .ExecuteDeleteAsync(cancellationToken);
         if (affectedRows == 0)
             throw new NotFoundException("Property not found");
     }
@@ -61,7 +61,8 @@ public class PropertyRepository(AppDbContext db)
         string sort,
         bool isDescending,
         int page,
-        int limit
+        int limit,
+        CancellationToken cancellationToken = default
     )
     {
         var query = _db.Properties.AsNoTracking();
@@ -97,11 +98,11 @@ public class PropertyRepository(AppDbContext db)
                 : query.OrderBy(p => p.Id),
         };
 
-        var total = await query.CountAsync();
+        var total = await query.CountAsync(cancellationToken);
         var properties = await query
             .Skip((page - 1) * limit)
             .Take(limit)
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
 
         return (properties, total);
     }

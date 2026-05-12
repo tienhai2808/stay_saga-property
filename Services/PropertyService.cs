@@ -13,7 +13,10 @@ public class PropertyService(PropertyRepository propertyRepo, RoomTypeRepository
     private readonly RoomTypeRepository _roomTypeRepo = roomTypeRepo;
     private readonly IIdGenerator<long> _idGenerator = idGenerator;
 
-    public async Task<long> CreateAsync(CreatePropertyDto dto)
+    public async Task<long> CreateAsync(
+        CreatePropertyDto dto, 
+        CancellationToken cancellationToken = default
+    )
     {
         var property = new Property
         {
@@ -28,12 +31,16 @@ public class PropertyService(PropertyRepository propertyRepo, RoomTypeRepository
             CheckOutTime = dto.CheckOutTime
         };
 
-        await _propertyRepo.CreateAsync(property);
+        await _propertyRepo.CreateAsync(property, cancellationToken);
 
         return property.Id;
     }
 
-    public async Task UpdateAsync(long id, UpdatePropertyDto dto)
+    public async Task UpdateAsync(
+        long id, 
+        UpdatePropertyDto dto, 
+        CancellationToken cancellationToken = default
+    )
     {
         var property = await _propertyRepo.GetByIdAsync(id) ?? 
             throw new NotFoundException("Property not found");
@@ -47,15 +54,18 @@ public class PropertyService(PropertyRepository propertyRepo, RoomTypeRepository
         property.CheckInTime = dto.CheckInTime;
         property.CheckOutTime = dto.CheckOutTime;
 
-        await _propertyRepo.UpdateAsync(property);
+        await _propertyRepo.UpdateAsync(property, cancellationToken);
     }
 
-    public async Task DeleteAsync(long id)
+    public async Task DeleteAsync(long id, CancellationToken cancellationToken = default)
     {
-        await _propertyRepo.DeleteAsync(id);
+        await _propertyRepo.DeleteAsync(id, cancellationToken);
     }
 
-    public async Task<(List<PropertyResponseDto>, MetaResponseDto)> ListAsync(PropertyQueryDto dto)
+    public async Task<(List<PropertyResponseDto>, MetaResponseDto)> ListAsync(
+        PropertyQueryDto dto, 
+        CancellationToken cancellationToken = default
+    )
     {
         var sort = string.IsNullOrWhiteSpace(dto.Sort)
             ? "id"
@@ -89,7 +99,8 @@ public class PropertyService(PropertyRepository propertyRepo, RoomTypeRepository
             sort,
             isDescending,
             dto.Page,
-            dto.Limit
+            dto.Limit,
+            cancellationToken
         );
 
         var propertyRes = properties
@@ -119,7 +130,12 @@ public class PropertyService(PropertyRepository propertyRepo, RoomTypeRepository
         return (propertyRes, meta);
     }
 
-    public async Task<(PropertyResponseDto?, List<BasicRoomTypeResponseDto>, MetaResponseDto)> ListRoomTypesByIdAsync(long id, RoomTypeQueryDto dto, bool includeProperty)
+    public async Task<(PropertyResponseDto?, List<BasicRoomTypeResponseDto>, MetaResponseDto)> ListRoomTypesByIdAsync(
+        long id, 
+        RoomTypeQueryDto dto, 
+        bool includeProperty,
+        CancellationToken cancellationToken = default
+    )
     {
         PropertyResponseDto? propertyRes = null;
 
@@ -173,7 +189,8 @@ public class PropertyService(PropertyRepository propertyRepo, RoomTypeRepository
             sort,
             isDescending,
             dto.Page,
-            dto.Limit
+            dto.Limit,
+            cancellationToken
         );
 
         var roomTypesRes = roomTypes

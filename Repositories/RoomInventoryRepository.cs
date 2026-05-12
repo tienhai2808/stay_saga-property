@@ -14,7 +14,8 @@ public class RoomInventoryRepository(AppDbContext db)
         long roomTypeId,
         int totalRoom,
         DateOnly startDate,
-        DateOnly endExclusiveDate
+        DateOnly endExclusiveDate,
+        CancellationToken cancellationToken = default
     )
     {
         var inventories = new List<RoomInventory>();
@@ -34,7 +35,7 @@ public class RoomInventoryRepository(AppDbContext db)
 
         try
         {
-            await _db.SaveChangesAsync();
+            await _db.SaveChangesAsync(cancellationToken);
         }
         catch (DbUpdateException ex) when (
             ex.InnerException is PostgresException pg &&
