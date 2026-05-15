@@ -23,7 +23,7 @@ public sealed class GrpcService(
         return Task.FromResult(new EmptyResponse());
     }
 
-    public override async Task<EmptyResponse> Reserve(ReserveRequest request, ServerCallContext context)
+    public override async Task<ReserveResponse> Reserve(ReserveRequest request, ServerCallContext context)
     {
         var cancellationToken = context.CancellationToken;
         if (
@@ -127,7 +127,9 @@ public sealed class GrpcService(
 
         await transaction.CommitAsync(cancellationToken);
 
-        return new EmptyResponse();
+        var amount = roomType.Price * request.RoomCount * totalNights;
+
+        return new ReserveResponse { Amount = (float)amount };
     }
 
     public override async Task<EmptyResponse> Release(ReleaseRequest request, ServerCallContext context)
