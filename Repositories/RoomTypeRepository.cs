@@ -33,10 +33,13 @@ public class RoomTypeRepository(AppDbContext db)
         }
     }
 
-    public async Task<RoomType?> GetById(long id, CancellationToken cancellationToken = default)
-    {
-        return await _db.RoomTypes.FirstOrDefaultAsync(rt => rt.Id == id, cancellationToken);
-    }
+    public Task<RoomType?> FindByIdAsync(long id, CancellationToken cancellationToken = default)
+        => _db.RoomTypes.FirstOrDefaultAsync(rt => rt.Id == id, cancellationToken);
+
+    public Task<RoomType?> FindByIdWithPropertyAsync(long id, CancellationToken cancellationToken = default)
+        => _db.RoomTypes
+            .Include(rt => rt.Property)
+            .FirstOrDefaultAsync(rt => rt.Id == id, cancellationToken);
 
     public async Task UpdateAsync(RoomType roomType, CancellationToken cancellationToken = default)
     {
@@ -63,7 +66,7 @@ public class RoomTypeRepository(AppDbContext db)
             throw new NotFoundException("Room type not found");
     }
 
-    public async Task<(List<RoomType>, int)> ListByPropertyIdAsync(
+    public async Task<(List<RoomType>, int)> FindAllByPropertyIdAsync(
         long propertyId,
         string search,
         string sort,
@@ -106,7 +109,7 @@ public class RoomTypeRepository(AppDbContext db)
         return (roomTypes, total);
     }
 
-    public async Task<(List<RoomType>, int)> ListAsync(
+    public async Task<(List<RoomType>, int)> FindAllWithPropertyAsync(
         long? propertyId,
         string search,
         string sort,

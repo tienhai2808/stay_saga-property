@@ -24,7 +24,7 @@ public class RoomTypeService(
     {
         if (!long.TryParse(dto.PropertyId.Trim(), out long propertyId) || propertyId <= 0)
         {
-            throw new ValidationException("Invalid property id");
+            throw new BadRequestException("Invalid property id");
         }
 
         var roomType = new RoomType
@@ -64,7 +64,7 @@ public class RoomTypeService(
     }
 
     public async Task<(List<RoomTypeResponseDto>, MetaResponseDto)> ListAsync(
-        RoomTypeQueryDto dto, 
+        RoomTypeQueryDto dto,
         CancellationToken cancellationToken = default
     )
     {
@@ -73,7 +73,7 @@ public class RoomTypeService(
         {
             if (!long.TryParse(dto.PropertyId.Trim(), out var parsedPropertyId) || parsedPropertyId <= 0)
             {
-                throw new ValidationException("Invalid property id");
+                throw new BadRequestException("Invalid property id");
             }
 
             propertyId = parsedPropertyId;
@@ -91,7 +91,7 @@ public class RoomTypeService(
             var isAscending = order.Equals("asc", StringComparison.OrdinalIgnoreCase);
             if (!isDescending && !isAscending)
             {
-                throw new ValidationException("Order must be either 'asc' or 'desc'");
+                throw new BadRequestException("Order must be either 'asc' or 'desc'");
             }
         }
 
@@ -103,10 +103,10 @@ public class RoomTypeService(
         };
         if (!validSortFields.Contains(sort))
         {
-            throw new ValidationException("Sort must be one of: id, name, price");
+            throw new BadRequestException("Sort must be one of: id, name, price");
         }
 
-        var (roomTypes, total) = await _roomTypeRepo.ListAsync(
+        var (roomTypes, total) = await _roomTypeRepo.FindAllWithPropertyAsync(
             propertyId,
             dto.Search,
             sort,
@@ -132,7 +132,7 @@ public class RoomTypeService(
                 )
             ))
             .ToList();
-        
+
         var totalPage = total == 0 ? 0 : (int)Math.Ceiling(total / (double)dto.Limit);
 
         var meta = new MetaResponseDto(
@@ -148,17 +148,17 @@ public class RoomTypeService(
     }
 
     public async Task UpdateAsync(
-        long id, 
-        UpdateRoomTypeDto dto, 
+        long id,
+        UpdateRoomTypeDto dto,
         CancellationToken cancellationToken = default
     )
     {
-        var roomType = await _roomTypeRepo.GetById(id, cancellationToken) ??
+        var roomType = await _roomTypeRepo.FindByIdAsync(id, cancellationToken) ??
             throw new NotFoundException("Room type not found");
 
         if (!long.TryParse(dto.PropertyId.Trim(), out long propertyId) || propertyId <= 0)
         {
-            throw new ValidationException("Invalid property id");
+            throw new BadRequestException("Invalid property id");
         }
 
         roomType.Name = dto.Name.Trim();

@@ -45,4 +45,77 @@ public class RoomInventoryRepository(AppDbContext db)
             throw new ConflictException("Room inventory already exists for one or more dates");
         }
     }
+
+    public Task<int> CountByRoomTypeIdAndStatusesInDateRangeAsync(
+        long roomTypeId,
+        DateOnly checkIn,
+        DateOnly checkOut,
+        int? minAvailableCount = null,
+        int? maxAvailableCount = null,
+        string[]? statuses = null,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var query = _db.RoomInventories.Where(ri =>
+            ri.RoomTypeId == roomTypeId && ri.Date >= checkIn && ri.Date < checkOut
+        );
+
+        if (minAvailableCount.HasValue)
+            query = query.Where(ri => ri.AvailableCount >= minAvailableCount.Value);
+
+        if (maxAvailableCount.HasValue)
+            query = query.Where(ri => ri.AvailableCount <= maxAvailableCount.Value);
+
+        if (statuses is { Length: > 0 })
+            query = query.Where(ri => statuses.Contains(ri.Status));
+
+        return query.CountAsync(cancellationToken);
+    }
+
+    public Task<int> UpdateAvailableCountByRoomTypeIdInDateRangeAsync(
+        long roomTypeId,
+        int availableCountDelta,
+        DateOnly checkIn,
+        DateOnly checkOut,
+        CancellationToken cancellationToken = default
+    ) => _db.RoomInventories
+            .Where(ri =>
+                ri.RoomTypeId == roomTypeId
+                && ri.Date >= checkIn
+                && ri.Date < checkOut
+            )
+            .ExecuteUpdateAsync(setters =>
+                setters.SetProperty(ri => ri.AvailableCount, ri => ri.AvailableCount + availableCountDelta),
+                cancellationToken
+            );
+
+    public Task<int> UpdateStatusByRoomTypeIdInDateRangeAsync(
+        long roomTypeId,
+        DateOnly checkIn,
+        DateOnly checkOut,
+        string status,
+        int? minAvailableCount = null,
+        int? maxAvailableCount = null,
+        string[]? statuses = null,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var query = _db.RoomInventories.Where(ri =>
+            ri.RoomTypeId == roomTypeId && ri.Date >= checkIn && ri.Date < checkOut
+        );
+
+        if (minAvailableCount.HasValue)
+            query = query.Where(ri => ri.AvailableCount >= minAvailableCount.Value);
+
+        if (maxAvailableCount.HasValue)
+            query = query.Where(ri => ri.AvailableCount <= maxAvailableCount.Value);
+
+        if (statuses is { Length: > 0 })
+            query = query.Where(ri => statuses.Contains(ri.Status));
+
+        return query.ExecuteUpdateAsync(setters =>
+            setters.SetProperty(ri => ri.Status, status),
+            cancellationToken
+        );
+    }
 }

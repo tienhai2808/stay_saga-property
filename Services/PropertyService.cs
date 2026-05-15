@@ -14,7 +14,7 @@ public class PropertyService(PropertyRepository propertyRepo, RoomTypeRepository
     private readonly IIdGenerator<long> _idGenerator = idGenerator;
 
     public async Task<long> CreateAsync(
-        CreatePropertyDto dto, 
+        CreatePropertyDto dto,
         CancellationToken cancellationToken = default
     )
     {
@@ -37,14 +37,14 @@ public class PropertyService(PropertyRepository propertyRepo, RoomTypeRepository
     }
 
     public async Task UpdateAsync(
-        long id, 
-        UpdatePropertyDto dto, 
+        long id,
+        UpdatePropertyDto dto,
         CancellationToken cancellationToken = default
     )
     {
-        var property = await _propertyRepo.GetByIdAsync(id) ?? 
+        var property = await _propertyRepo.GetByIdAsync(id) ??
             throw new NotFoundException("Property not found");
-        
+
         property.Name = dto.Name.Trim();
         property.Address = dto.Address.Trim();
         property.Ward = dto.Ward.Trim();
@@ -63,7 +63,7 @@ public class PropertyService(PropertyRepository propertyRepo, RoomTypeRepository
     }
 
     public async Task<(List<PropertyResponseDto>, MetaResponseDto)> ListAsync(
-        PropertyQueryDto dto, 
+        PropertyQueryDto dto,
         CancellationToken cancellationToken = default
     )
     {
@@ -79,7 +79,7 @@ public class PropertyService(PropertyRepository propertyRepo, RoomTypeRepository
             var isAscending = order.Equals("asc", StringComparison.OrdinalIgnoreCase);
             if (!isDescending && !isAscending)
             {
-                throw new ValidationException("Order must be either 'asc' or 'desc'");
+                throw new BadRequestException("Order must be either 'asc' or 'desc'");
             }
         }
 
@@ -92,7 +92,7 @@ public class PropertyService(PropertyRepository propertyRepo, RoomTypeRepository
             "city"
         };
         if (!validSortFields.Contains(sort))
-            throw new ValidationException("Sort must be one of: id, name, address, ward, city");
+            throw new BadRequestException("Sort must be one of: id, name, address, ward, city");
 
         var (properties, total) = await _propertyRepo.ListAsync(
             dto.Search,
@@ -131,8 +131,8 @@ public class PropertyService(PropertyRepository propertyRepo, RoomTypeRepository
     }
 
     public async Task<(PropertyResponseDto?, List<BasicRoomTypeResponseDto>, MetaResponseDto)> ListRoomTypesByIdAsync(
-        long id, 
-        RoomTypeQueryDto dto, 
+        long id,
+        RoomTypeQueryDto dto,
         bool includeProperty,
         CancellationToken cancellationToken = default
     )
@@ -143,7 +143,7 @@ public class PropertyService(PropertyRepository propertyRepo, RoomTypeRepository
         {
             var property = await _propertyRepo.GetByIdAsync(id) ??
                 throw new NotFoundException("Property not found");
-            
+
             propertyRes = new PropertyResponseDto(
                 property.Id.ToString(),
                 property.Name,
@@ -169,7 +169,7 @@ public class PropertyService(PropertyRepository propertyRepo, RoomTypeRepository
             var isAscending = order.Equals("asc", StringComparison.OrdinalIgnoreCase);
             if (!isDescending && !isAscending)
             {
-                throw new ValidationException("Order must be either 'asc' or 'desc'");
+                throw new BadRequestException("Order must be either 'asc' or 'desc'");
             }
         }
 
@@ -181,9 +181,9 @@ public class PropertyService(PropertyRepository propertyRepo, RoomTypeRepository
         };
 
         if (!validSortFields.Contains(sort))
-            throw new ValidationException("Sort must be one of: id, name, price");
+            throw new BadRequestException("Sort must be one of: id, name, price");
 
-        var (roomTypes, total) = await _roomTypeRepo.ListByPropertyIdAsync(
+        var (roomTypes, total) = await _roomTypeRepo.FindAllByPropertyIdAsync(
             id,
             dto.Search,
             sort,
@@ -202,7 +202,7 @@ public class PropertyService(PropertyRepository propertyRepo, RoomTypeRepository
                 rt.TotalRoom
             ))
             .ToList();
-        
+
         var totalPage = total == 0 ? 0 : (int)Math.Ceiling(total / (double)dto.Limit);
 
         var meta = new MetaResponseDto(
